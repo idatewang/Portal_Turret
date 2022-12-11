@@ -8,6 +8,7 @@ from camera import VideoCamera
 import time
 import threading
 import os
+import RPi.GPIO as GPIO
 
 pi_camera = VideoCamera(flip=False) # flip pi camera if upside down.
 
@@ -20,8 +21,19 @@ def index():
 
 def gen(camera):
     #get camera frame
+    # Set GPIO numbering mode
+    GPIO.setmode(GPIO.BOARD)
+    # Set pin 11 as an output, and set servo1 as pin 11 as PWM
+    GPIO.setup(11,GPIO.OUT)
+    servo1 = GPIO.PWM(11,50) # Note 11 is pin, 50 = 50Hz pulse
+    #start PWM running, but with value of 0 (pulse off)
+    servo_pos = 7
+    print ("Waiting for 2 seconds")
+    time.sleep(2.0)
+    #servo1.start(7)
+
     while True:
-        frame = camera.get_frame()
+        frame = camera.get_frame(servo1,servo_pos)
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
